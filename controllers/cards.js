@@ -1,14 +1,15 @@
 const { CREATED_CODE } = require('../constants/constants');
-const ForbiddenError = require('../errors/ForbiddenError');
 const Card = require('../models/cards');
+const errorsHandler = require('../errors/errorsHandler');
 
 const getCards = (req, res, next) => {
   Card.find()
-    .populate(['owner', 'likes'])
     .then((cards) => {
       res.send({ data: cards });
     })
-    .catch(next);
+    .catch((err) => {
+      next(errorsHandler(err));
+    });
 };
 
 const createCard = (req, res, next) => {
@@ -19,7 +20,9 @@ const createCard = (req, res, next) => {
     .then((newCard) => {
       res.status(CREATED_CODE).send({ data: newCard });
     })
-    .catch(next);
+    .catch((err) => {
+      next(errorsHandler(err));
+    });
 };
 
 const deleteСard = (req, res, next) => {
@@ -28,7 +31,6 @@ const deleteСard = (req, res, next) => {
 
   Card.findById(cardId)
     .orFail()
-    .populate(['owner', 'likes'])
     // eslint-disable-next-line consistent-return
     .then((card) => {
       const ownerId = card.owner._id.toString();
@@ -39,12 +41,16 @@ const deleteСard = (req, res, next) => {
           .then(() => {
             res.send({ message: 'Карточка удалена' });
           })
-          .catch(next);
+          .catch((err) => {
+            next(errorsHandler(err));
+          });
       } else {
-        return next(new ForbiddenError('Нет прав для удаления этой карточки'));
+        return next(errorsHandler('ForbiddenError'));
       }
     })
-    .catch(next);
+    .catch((err) => {
+      next(errorsHandler(err));
+    });
 };
 
 const likeCard = (req, res, next) => {
@@ -56,7 +62,9 @@ const likeCard = (req, res, next) => {
     .then((card) => {
       res.send({ data: card });
     })
-    .catch(next);
+    .catch((err) => {
+      next(errorsHandler(err));
+    });
 };
 
 const dislikeCard = (req, res, next) => {
@@ -68,7 +76,9 @@ const dislikeCard = (req, res, next) => {
     .then((card) => {
       res.send({ data: card });
     })
-    .catch(next);
+    .catch((err) => {
+      next(errorsHandler(err));
+    });
 };
 
 module.exports = {

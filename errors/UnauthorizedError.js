@@ -1,11 +1,11 @@
 const { UNAUTHORIZED_ERROR_CODE } = require('../constants/constants');
 
-class AuthorizationError extends Error {
+class UnauthorizedError extends Error {
   constructor(message) {
     super(message);
     this.statusCode = UNAUTHORIZED_ERROR_CODE;
-    this.name = 'AuthorizationError';
+    this.name = 'UnauthorizedError';
   }
 }
 
-module.exports = AuthorizationError;
+module.exports = UnauthorizedError;

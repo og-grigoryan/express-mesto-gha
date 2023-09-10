@@ -1,15 +1,17 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { CREATED_CODE } = require('../constants/constants');
-const AuthorizationError = require('../errors/AuthorizationError');
 const User = require('../models/users');
+const errorsHandler = require('../errors/errorsHandler');
 
 const getUsers = (req, res, next) => {
   User.find()
     .then((users) => {
       res.send({ data: users });
     })
-    .catch(next);
+    .catch((err) => {
+      next(errorsHandler(err));
+    });
 };
 
 const getUserMe = (req, res, next) => {
@@ -19,7 +21,9 @@ const getUserMe = (req, res, next) => {
     .then((user) => {
       res.send({ data: user });
     })
-    .catch(next);
+    .catch((err) => {
+      next(errorsHandler(err));
+    });
 };
 
 const getUser = (req, res, next) => {
@@ -29,7 +33,9 @@ const getUser = (req, res, next) => {
     .then((user) => {
       res.send({ data: user });
     })
-    .catch(next);
+    .catch((err) => {
+      next(errorsHandler(err));
+    });
 };
 
 const createUser = (req, res, next) => {
@@ -55,9 +61,13 @@ const createUser = (req, res, next) => {
           delete data.password;
           res.status(CREATED_CODE).send(data);
         })
-        .catch(next);
+        .catch((err) => {
+          next(errorsHandler(err));
+        });
     })
-    .catch(next);
+    .catch((err) => {
+      next(errorsHandler(err));
+    });
 };
 
 const updateUserData = (req, res, next) => {
@@ -69,7 +79,9 @@ const updateUserData = (req, res, next) => {
     .then((user) => {
       res.send({ data: user });
     })
-    .catch(next);
+    .catch((err) => {
+      next(errorsHandler(err));
+    });
 };
 
 const updateUserAvatar = (req, res, next) => {
@@ -81,7 +93,9 @@ const updateUserAvatar = (req, res, next) => {
     .then((user) => {
       res.send({ data: user });
     })
-    .catch(next);
+    .catch((err) => {
+      next(errorsHandler(err));
+    });
 };
 
 const login = (req, res, next) => {
@@ -94,13 +108,13 @@ const login = (req, res, next) => {
     // eslint-disable-next-line consistent-return
     .then((user) => {
       if (!user) {
-        return next(new AuthorizationError('Неправильные почта или пароль'));
+        return next(errorsHandler('AuthorizationError'));
       }
 
       bcrypt.compare(password, user.password)
         .then((matched) => {
           if (!matched) {
-            return next(new AuthorizationError('Неправильные почта или пароль'));
+            return next(errorsHandler('AuthorizationError'));
           }
 
           const token = jwt.sign({ _id: user._id }, 'SECRET_KEY', { expiresIn: '7d' }); // HARDCODE SECRET_KEY
@@ -108,7 +122,9 @@ const login = (req, res, next) => {
           return res.send({ JWT: token });
         });
     })
-    .catch(next);
+    .catch((err) => {
+      next(errorsHandler(err));
+    });
 };
 
 module.exports = {
