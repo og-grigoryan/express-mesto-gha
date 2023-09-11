@@ -1,6 +1,8 @@
 const { CREATED_CODE } = require('../constants/constants');
 const Card = require('../models/cards');
-const errorsHandler = require('../errors/errorsHandler');
+const BadRequestError = require('../errors/BadRequestError');
+const ForbiddenError = require('../errors/ForbiddenError');
+const NotFoundError = require('../errors/NotFoundError');
 
 const getCards = (req, res, next) => {
   Card.find()
@@ -8,7 +10,7 @@ const getCards = (req, res, next) => {
       res.send({ data: cards });
     })
     .catch((err) => {
-      next(errorsHandler(err));
+      next((err));
     });
 };
 
@@ -21,7 +23,11 @@ const createCard = (req, res, next) => {
       res.status(CREATED_CODE).send({ data: newCard });
     })
     .catch((err) => {
-      next(errorsHandler(err));
+      if (err.name === 'ValidationError') {
+        next(new BadRequestError('Переданы некорректные данные при создании карточки'));
+      } else {
+        next(err);
+      }
     });
 };
 
@@ -41,15 +47,19 @@ const deleteСard = (req, res, next) => {
           .then(() => {
             res.send({ message: 'Карточка удалена' });
           })
-          .catch((err) => {
-            next(errorsHandler(err));
-          });
+          .catch(next);
       } else {
-        return next(errorsHandler('ForbiddenError'));
+        next(new ForbiddenError('Нет прав для удаления этой карточки'));
       }
     })
     .catch((err) => {
-      next(errorsHandler(err));
+      if (err.name === 'DocumentNotFoundError') {
+        next(new NotFoundError('Передан несуществующий _id карточки'));
+      } else if (err.name === 'CastError') {
+        next(new BadRequestError('Передан некорректный _id'));
+      } else {
+        next(err);
+      }
     });
 };
 
@@ -63,7 +73,13 @@ const likeCard = (req, res, next) => {
       res.send({ data: card });
     })
     .catch((err) => {
-      next(errorsHandler(err));
+      if (err.name === 'DocumentNotFoundError') {
+        next(new NotFoundError('Передан несуществующий _id карточки'));
+      } else if (err.name === 'CastError') {
+        next(new BadRequestError('Передан некорректный _id'));
+      } else {
+        next(err);
+      }
     });
 };
 
@@ -77,7 +93,13 @@ const dislikeCard = (req, res, next) => {
       res.send({ data: card });
     })
     .catch((err) => {
-      next(errorsHandler(err));
+      if (err.name === 'DocumentNotFoundError') {
+        next(new NotFoundError('Передан несуществующий _id карточки'));
+      } else if (err.name === 'CastError') {
+        next(new BadRequestError('Передан некорректный _id'));
+      } else {
+        next(err);
+      }
     });
 };
 
